@@ -75,10 +75,10 @@ Run client (example):
 
 ```bash
 # Player RED
-python connect_four_client.py localhost:50051 --automate --player R
+python client.py localhost:50051 --automate --player R
 
 # Player YELLOW
-python connect_four_client.py localhost:50051 --automate --player Y --game_id 1
+python client.py localhost:50051 --automate --player Y --game_id 1
 ```
 
 ## Checklist
