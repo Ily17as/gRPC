@@ -29,6 +29,8 @@ echo "[2/4] Running Player RED (creator)..."
 python3 "$CLIENT_FILE" localhost:50051 --automate --player R &
 CLIENT1_PID=$!
 
+sleep 2
+
 echo "[3/4] Running Player YELLOW (joins game 1)..."
 python3 "$CLIENT_FILE" localhost:50051 --automate --player Y --game_id 1 &
 CLIENT2_PID=$!
