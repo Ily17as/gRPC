@@ -25,10 +25,7 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
     def GetGame(self, request, context):
         game_id = request.game_id
         if game_id not in self.games:
-            context.set_code(StatusCode.NOT_FOUND)
-            context.set_details("Game not found.")
-            print(f"[ERROR] GetGame: Game ID={game_id} not found")
-            return cf.Game()
+            context.abort(StatusCode.NOT_FOUND, "Game not found.")
         return self.games[game_id]
 
     def MakeMove(self, request, context):
