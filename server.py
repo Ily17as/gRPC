@@ -133,8 +133,5 @@ def serve(port):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python server.py <port>")
-        sys.exit(1)
-
-    serve(sys.argv[1])
+    port = sys.argv[1] if len(sys.argv) > 1 else "50051"
+    serve(port)
