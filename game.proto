@@ -2,60 +2,47 @@ syntax = "proto3";
 
 package connectfour;
 
-// Define the marks for players
+service ConnectFour {
+  rpc CreateGame (CreateGameRequest) returns (CreateGameResponse);
+  rpc GetGame (GetGameRequest) returns (GetGameResponse);
+  rpc MakeMove (MakeMoveRequest) returns (MakeMoveResponse);
+}
+
 enum Mark {
   MARK_UNSPECIFIED = 0;
   MARK_RED = 1;
   MARK_YELLOW = 2;
 }
 
-// Define the Move message, which includes player mark and column
 message Move {
   Mark mark = 1;
   int32 column = 2;
 }
 
-// Define the Game message to track the game's state
 message Game {
   int32 id = 1;
   repeated Move moves = 2;
   Mark turn = 3;
   bool is_finished = 4;
-  Mark winner = 5;  // This will be set if there is a winner
+  optional Mark winner = 5;
 }
 
-// Request message to get a game state by its ID
-message GetGameRequest {
-  int32 game_id = 1;
-}
-
-// Response message to return a game state
-message GetGameResponse {
-  Game game = 1;
-}
-
-// Request to create a new game (no input parameters)
 message CreateGameRequest {}
-
-// Response after creating a game (includes the game object)
 message CreateGameResponse {
   Game game = 1;
 }
 
-// Request message to make a move in the game
+message GetGameRequest {
+  int32 game_id = 1;
+}
+message GetGameResponse {
+  Game game = 1;
+}
+
 message MakeMoveRequest {
   int32 game_id = 1;
   Move move = 2;
 }
-
-// Response message after making a move
 message MakeMoveResponse {
   Game game = 1;
-}
-
-// Service to interact with the Connect Four game
-service ConnectFour {
-  rpc CreateGame (CreateGameRequest) returns (CreateGameResponse);
-  rpc GetGame (GetGameRequest) returns (GetGameResponse);
-  rpc MakeMove (MakeMoveRequest) returns (MakeMoveResponse);
 }

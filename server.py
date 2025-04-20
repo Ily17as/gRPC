@@ -16,54 +16,43 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
         game_id = self.next_game_id
         self.next_game_id += 1
 
-        game = cf.Game(id=game_id, turn=cf.MARK_RED, is_finished=False)
+        game = cf.Game(
+            id=game_id,
+            turn=cf.MARK_RED,
+            is_finished=False,
+            moves=[]
+        )
         self.games[game_id] = game
-
-        print(f"[LOG] Created new game: ID={game_id}")
-        return game
+        print(f"[LOG] Created game {game_id}")
+        return cf.CreateGameResponse(game=game)
 
     def GetGame(self, request, context):
         game_id = request.game_id
         if game_id not in self.games:
             context.abort(StatusCode.NOT_FOUND, "Game not found.")
-        return self.games[game_id]
+        return cf.GetGameResponse(game=self.games[game_id])
 
     def MakeMove(self, request, context):
         game_id = request.game_id
         move = request.move
 
         if game_id not in self.games:
-            context.set_code(StatusCode.NOT_FOUND)
-            context.set_details("Game not found.")
-            print(f"[ERROR] MakeMove: Game ID={game_id} not found")
-            return cf.Game()
+            context.abort(StatusCode.NOT_FOUND, "Game not found.")
 
         game = self.games[game_id]
 
         if game.is_finished:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details("Game is already finished.")
-            print(f"[ERROR] Game {game_id} is finished.")
-            return game
+            context.abort(StatusCode.FAILED_PRECONDITION, "Game is already finished.")
 
         if move.mark != game.turn:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details("It's not your turn.")
-            print(f"[ERROR] Game {game_id}: Not player’s turn.")
-            return game
+            context.abort(StatusCode.FAILED_PRECONDITION, "It's not your turn.")
 
         if move.column < 1 or move.column > 7:
-            context.set_code(StatusCode.INVALID_ARGUMENT)
-            context.set_details("Column must be between 1 and 7.")
-            print(f"[ERROR] Invalid column: {move.column}")
-            return game
+            context.abort(StatusCode.INVALID_ARGUMENT, "Invalid column number.")
 
         col_moves = [m for m in game.moves if m.column == move.column]
         if len(col_moves) >= 6:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details("Column is full.")
-            print(f"[ERROR] Column {move.column} is full.")
-            return game
+            context.abort(StatusCode.FAILED_PRECONDITION, "Column is full.")
 
         game.moves.append(move)
         winner = self.check_winner(game.moves)
@@ -78,10 +67,9 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
         else:
             game.turn = cf.MARK_YELLOW if game.turn == cf.MARK_RED else cf.MARK_RED
 
-        return game
+        return cf.MakeMoveResponse(game=game)
 
     def check_winner(self, moves):
-        # Построим поле 6x7
         board = [[0] * 7 for _ in range(6)]
         for move in moves:
             for row in reversed(range(6)):
@@ -90,15 +78,13 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
                     break
 
         def check_line(r, c, dr, dc, mark):
-            count = 0
             for _ in range(4):
                 if 0 <= r < 6 and 0 <= c < 7 and board[r][c] == mark:
-                    count += 1
                     r += dr
                     c += dc
                 else:
-                    break
-            return count == 4
+                    return False
+            return True
 
         for r in range(6):
             for c in range(7):
@@ -106,10 +92,10 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
                 if mark == 0:
                     continue
                 if (
-                    check_line(r, c, 0, 1, mark) or  # →
-                    check_line(r, c, 1, 0, mark) or  # ↓
-                    check_line(r, c, 1, 1, mark) or  # ↘
-                    check_line(r, c, 1, -1, mark)    # ↙
+                    check_line(r, c, 0, 1, mark) or
+                    check_line(r, c, 1, 0, mark) or
+                    check_line(r, c, 1, 1, mark) or
+                    check_line(r, c, 1, -1, mark)
                 ):
                     return mark
         return None
