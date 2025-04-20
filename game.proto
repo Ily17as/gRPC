@@ -3,9 +3,9 @@ syntax = "proto3";
 package connectfour;
 
 service ConnectFour {
-  rpc CreateGame (CreateGameRequest) returns (CreateGameResponse);
-  rpc GetGame (GetGameRequest) returns (GetGameResponse);
-  rpc MakeMove (MakeMoveRequest) returns (MakeMoveResponse);
+  rpc CreateGame (CreateGameRequest) returns (Game);
+  rpc GetGame (GetGameRequest) returns (Game);
+  rpc MakeMove (MakeMoveRequest) returns (Game);
 }
 
 enum Mark {
@@ -28,21 +28,12 @@ message Game {
 }
 
 message CreateGameRequest {}
-message CreateGameResponse {
-  Game game = 1;
-}
 
 message GetGameRequest {
   int32 game_id = 1;
-}
-message GetGameResponse {
-  Game game = 1;
 }
 
 message MakeMoveRequest {
   int32 game_id = 1;
   Move move = 2;
-}
-message MakeMoveResponse {
-  Game game = 1;
 }

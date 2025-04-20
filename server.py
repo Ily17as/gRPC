@@ -24,13 +24,13 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
         )
         self.games[game_id] = game
         print(f"[LOG] Created game {game_id}")
-        return cf.CreateGameResponse(game=game)
+        return game  # ✅ возвращаем cf.Game напрямую
 
     def GetGame(self, request, context):
         game_id = request.game_id
         if game_id not in self.games:
             context.abort(StatusCode.NOT_FOUND, "Game not found.")
-        return cf.GetGameResponse(game=self.games[game_id])
+        return self.games[game_id]  # ✅ возвращаем cf.Game
 
     def MakeMove(self, request, context):
         game_id = request.game_id
@@ -67,7 +67,7 @@ class ConnectFourService(cf_grpc.ConnectFourServicer):
         else:
             game.turn = cf.MARK_YELLOW if game.turn == cf.MARK_RED else cf.MARK_RED
 
-        return cf.MakeMoveResponse(game=game)
+        return game  # ✅ возвращаем cf.Game
 
     def check_winner(self, moves):
         board = [[0] * 7 for _ in range(6)]
